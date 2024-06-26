@@ -4,7 +4,10 @@ const file = process.argv[2];
 const contents = fs.readFileSync(file, 'utf8');
 const lines = contents.split('\n').filter(Boolean);
 
-const MAX_CHARGE = 5
+const MAX_CHARGE = 4.8
+const INVERTER_OUTPUT = 2.4;
+
+const MAX_USAGE_PER_SLOT = INVERTER_OUTPUT / 4; // assuming "kwartiertotalen"
 
 const COLUMNS = {
     type: 7,
@@ -34,13 +37,21 @@ for (const line of lines) {
     console.log(amount, type)
 
     if (type.startsWith('Injectie')) {
-        const charge = Math.min(BATTERY.max - BATTERY.current, amount);
+        const charge = Math.min(
+            BATTERY.max - BATTERY.current,
+            amount
+        );
+
         const inject = amount - charge;
 
         BATTERY.current += charge;
         NET.inject += inject;
     } else {
-        const battery = Math.min(BATTERY.current, amount);
+        const battery = Math.min(
+            MAX_USAGE_PER_SLOT,
+            BATTERY.current,
+            amount
+        );
         const net = amount - battery;
 
         BATTERY.current -= battery;

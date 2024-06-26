@@ -34,8 +34,6 @@ for (const line of lines) {
     const amountStr = parts[COLUMNS.amount];
     const amount = parseFloat(amountStr.replace(/\./g, '').replace(',', '.'));
 
-    console.log(amount, type)
-
     if (type.startsWith('Injectie')) {
         const charge = Math.min(
             BATTERY.max - BATTERY.current,

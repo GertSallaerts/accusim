@@ -4,8 +4,30 @@ const file = process.argv[2];
 const contents = fs.readFileSync(file, 'utf8');
 const lines = contents.split('\n').filter(Boolean);
 
-const MAX_CHARGE = 4.8
-const INVERTER_OUTPUT = 2.4;
+const NET_PRICES = {
+    inject: 0.057,
+    usage: 0.313,
+};
+
+const CONFIGS = {
+    charge_2_power_2: {
+        MAX_CHARGE: 2.4,
+        INVERTER_OUTPUT: 2.4,
+        PRICE: 1554,
+    },
+    charge_3_power_2: {
+        MAX_CHARGE: 3.5,
+        INVERTER_OUTPUT: 2.4,
+        PRICE: 1858,
+    },
+    charge_5_power_2: {
+        MAX_CHARGE: 4.8,
+        INVERTER_OUTPUT: 2.4,
+        PRICE: 2158,
+    },
+}
+
+const { MAX_CHARGE, INVERTER_OUTPUT, PRICE } = CONFIGS.charge_5_power_2;
 
 const MAX_USAGE_PER_SLOT = INVERTER_OUTPUT / 4; // assuming "kwartiertotalen"
 
@@ -58,9 +80,24 @@ for (const line of lines) {
     }
 }
 
+const batteryUsage = Math.round(BATTERY.usage);
+const netUsage = Math.round(NET.usage);
+const netInject = Math.round(NET.inject);
+
+const batterySavings = (batteryUsage * NET_PRICES.usage);
+const injectionLoss = (batteryUsage * NET_PRICES.inject);
+const savings = batterySavings - injectionLoss;
+const terugverdientijd = PRICE / savings;
+
 console.log({
-    BATTERY,
-    NET
-})
-
-
+    MAX_CHARGE,
+    INVERTER_OUTPUT,
+    PRICE,
+    netUsage,
+    netInject,
+    batteryUsage,
+    batterySavings: `€${batterySavings.toFixed(2)}`,
+    injectionLoss: `€${injectionLoss.toFixed(2)}`,
+    yearlySavings: `€${savings.toFixed(2)}`,
+    terugverdientijd,
+});
